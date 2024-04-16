@@ -17,7 +17,7 @@ app.post("/generatePdf",async(req,res)=>{
         const {id} = req.body;
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto(`https://test.ekazi.co.tz/cv/template/${id}`);
+        await page.goto(`https://test.ekazi.co.tz/cv/template/21100`);
         await page.pdf({ path: 'files/cv.pdf', printBackground:true, format: 'A4'});
         await browser.close();
         res.status(200).json({
