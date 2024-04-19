@@ -9,9 +9,9 @@ app.use(express.json());
 app.use("/files", express.static("files"));
 app.use(bodyParser.text({ type: "/" }));
 
-app.get("/generatePdf", async (req, res) => {
+app.get("/generatePdf/:id", async (req, res) => {
     try {
-        const {id} = req.body;
+        const {id} = req.params;
         const browser = await chromium.launch();
         const page = await browser.newPage();
         await page.goto(`https://test.ekazi.co.tz/cv/template/${id}`);
