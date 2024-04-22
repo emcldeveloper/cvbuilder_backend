@@ -9,14 +9,14 @@ app.use(express.json());
 app.use("/files", express.static("files"));
 app.use(bodyParser.text({ type: "/" }));
 
-app.get("/generatePdf/:id", async (req, res) => {
+app.get("/generatePdf", async (req, res) => {
     try {
-        const {id} = req.params;
+        const {id,template} = req.query;
         console.log("starting generating CV");
         console.log(id);
         const browser = await chromium.launch();
         const page = await browser.newPage();
-        await page.goto(`https://test.ekazi.co.tz/cv/template/${id}`);
+        await page.goto(`https://test.ekazi.co.tz/cv/template/${id}${template}`);
         await page.pdf({ path: 'files/cv.pdf', format: 'A4',printBackground: true });
         await browser.close();
         console.log("Finished generating CV");
