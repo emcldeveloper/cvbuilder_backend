@@ -11,21 +11,22 @@ app.use(bodyParser.text({ type: "/" }));
 
 app.get("/generatePdf", async (req, res) => {
     try {
-        const {id,template} = req.query;
-        console.log("starting generating CV");
-        console.log(id);
+       const {uuid,template} = req.query;
         const browser = await chromium.launch();
         const page = await browser.newPage();
-        await page.goto(`https://test.ekazi.co.tz/cv/template/${id}${template}`);
-        await page.pdf({ path: 'files/cv.pdf', format: 'A4',printBackground: true });
+        await page.goto(`http://cvbuilder.ekazi.co.tz/template${template}/${uuid}`);
+        await page.waitForSelector('#data');
+        await page.waitForTimeout(3000)
+
+        await page.pdf({ path: 'files/cv.pdf', format: 'A4',printBackground: true,preferCSSPageSize:true,outline:true,margin:{bottom:30,top:template==1?30:0} });
         await browser.close();
-        console.log("Finished generating CV");
         res.status(200).json({
             status: true,
             body: {
-                link: "https://cvtemplate.ekazi.co.tz/files/cv.pdf"
+                link: "http://cvtemplate.ekazi.co.tz/files/cv.pdf"
             }
         });
+        console.log('Completed')
     } catch (error) {
         console.log(error);
         res.status(500).send({
