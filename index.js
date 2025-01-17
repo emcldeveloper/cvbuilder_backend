@@ -7,13 +7,20 @@ const { chromium } = require('playwright');
 
 
 
-app.use(cors());
+///app.use(cors());
+app.use(cors({
+    origin: 'https://cvbuilder.ekazi.co.tz',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
 app.use(express.json());
 app.use("/files", express.static("files"));
 app.use(bodyParser.text({ type: "/" }));
 
 
 app.get("/generatePdf", async (req, res) => {
+   
+    
     try {
       
        ///
