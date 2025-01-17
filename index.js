@@ -10,6 +10,7 @@ const { chromium } = require('playwright');
 ///app.use(cors());
 app.use(cors({
     origin: 'https://cvbuilder.ekazi.co.tz',
+    // origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
@@ -19,7 +20,9 @@ app.use(bodyParser.text({ type: "/" }));
 
 
 app.get("/generatePdf", async (req, res) => {
-   
+    res.header('Access-Control-Allow-Origin', 'https://cvbuilder.ekazi.co.tz');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     
     try {
       
