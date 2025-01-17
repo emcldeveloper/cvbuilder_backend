@@ -1,8 +1,10 @@
- const express = require('express');
+const express = require('express');
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const { chromium } = require('playwright');
+
+
 
 
 app.use(cors());
@@ -13,8 +15,16 @@ app.use(bodyParser.text({ type: "/" }));
 
 app.get("/generatePdf", async (req, res) => {
     try {
-       
+      
+       ///
         const { uuid, template, name } = req.query;
+        
+        // Check for #data
+        const singleTemplate = Array.isArray(template) ? template[0] : template;
+        const singleId = Array.isArray(uuid) ? uuid[0] : uuid;
+
+        // Log for debugging
+      
 
 
         if (!uuid || !template || !name) {
@@ -46,17 +56,39 @@ app.get("/generatePdf", async (req, res) => {
             // });
             // console.log("PDF generated successfully:", filePath);
             // await browser.close();
-            const filePath = `files/${name} CV.pdf`;
+            const filePath = `files/${name}CV.pdf`;
             try {
-                await page.goto(`https://cvbuilder.ekazi.co.tz/template${template}/${uuid}`);
+                const url = `https://cvbuilder.ekazi.co.tz/template${singleTemplate}/${singleId}`;
+                console.log("Constructed URL:", url);
+
+                await page.goto(url);
+                
+            
+
+        const dataElement = await page.$('#data');
+        if (!dataElement) {
+            console.warn("The #data element is not present on the page.");
+            // Optionally, proceed with PDF generation without #data
+        } else {
+            console.log("The #data element is present.");
+        }
                 console.log("Navigated to page.");
-                await page.waitForLoadState('networkidle'); // Wait for the page to finish loading
-                await page.waitForSelector('#data', { timeout: 60000 });
-                console.log("#data element is visible.");
+                await page.waitForSelector('#data');
+                await page.waitForTimeout(3000)
+              
+                // Debugging: Check for #data element
+            if (!(await page.$('#data'))) {
+                console.error("The #data element is not present on the page.");
+                await browser.close();
+                return res.status(500).json({
+                    status: false,
+                    message: "Failed to generate PDF: The #data element is not present on the page.",
+                });
+            }
             
                 
                 
-                await page.waitForTimeout(6000); // Additional wait if needed
+                // await page.waitForTimeout(6000); // Additional wait if needed
             
                
                 await page.pdf({
@@ -80,6 +112,7 @@ app.get("/generatePdf", async (req, res) => {
             status: true,
             body: {
                 link: `https://cvtemplate.ekazi.co.tz/${filePath}`,
+                // https://cvtemplate.ekazi.co.tz/${filePath}
             },
         });
         console.log('PDF generation completed');
