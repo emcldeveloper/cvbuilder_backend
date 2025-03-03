@@ -1,40 +1,22 @@
 const express = require('express');
 const app = express();
-const bodyParser = require("body-parser");
-const cors = require('cors');
+const bodyParser = require('body-parser');
 const { chromium } = require('playwright');
+const path = require('path');
+const fs = require('fs');
 
-
-
-
-///app.use(cors());
-// app.use(cors({
-//     origin: 'https://cvbuilder.ekazi.co.tz',
-//     // origin: 'http://localhost:3000',
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//     allowedHeaders: ['Content-Type', 'Authorization'],
-//   }));
 app.use(express.json());
-app.use("/files", express.static("files"));
-app.use(bodyParser.text({ type: "/" }));
+app.use('/files', express.static('files')); // Serve static files from the "files" directory
+app.use(bodyParser.text({ type: '/' }));
 
+// Function to sanitize file names
+const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
 
-app.get("/generatePdf", async (req, res) => {
-    
-    
+app.get('/generatePdf', async (req, res) => {
     try {
-      
-       ///
         const { uuid, template, name } = req.query;
-        
-        // Check for #data
-        const singleTemplate = Array.isArray(template) ? template[0] : template;
-        const singleId = Array.isArray(uuid) ? uuid[0] : uuid;
 
-        // Log for debugging
-      
-
-
+        // Validate required query parameters
         if (!uuid || !template || !name) {
             return res.status(400).send({
                 status: false,
@@ -42,88 +24,81 @@ app.get("/generatePdf", async (req, res) => {
             });
         }
 
-
+        // Launch the browser
         const browser = await chromium.launch();
         const page = await browser.newPage();
-       
-            // await page.goto(`http://localhost:3000/template${template}/${uuid}`);
-            // console.log("Navigated to page.");
-        
-            // await page.waitForSelector('#data', { timeout: 60000 });
-            // console.log("#data element is visible.");
-        
-            // await page.waitForTimeout(6000); // Additional wait if needed
-        
-            // const filePath = `files/${name} CV.pdf`;
-            // await page.pdf({
-            //     path: filePath,
-            //     format: 'A4',
-            //     printBackground: true,
-            //     preferCSSPageSize: true,
-            //     margin: { bottom: 30, top: template == 1 ? 30 : 0 },
-            // });
-            // console.log("PDF generated successfully:", filePath);
-            // await browser.close();
-            const filePath = `files/${name}CV.pdf`;
-            try {
-                const url = `https://cvbuilder.ekazi.co.tz/template${singleTemplate}/${singleId}`;
-                console.log("Constructed URL:", url);
 
-                await page.goto(url);
-                
-            
+        // Construct the URL and file path
+        const url = `https://cvbuilder.ekazi.co.tz/template${template}/${uuid}`;
+        const sanitizedName = sanitize(name); // Sanitize the name
+        const fileName = `${sanitizedName}_${template}_${Date.now()}CV.pdf`; // Unique file name
+        const filesDir = path.join(__dirname, 'files'); // Absolute path to the "files" directory
+        const filePath = path.join(filesDir, fileName); // Absolute path to the PDF file
 
-        const dataElement = await page.$('#data');
-        if (!dataElement) {
-            console.warn("The #data element is not present on the page.");
-            // Optionally, proceed with PDF generation without #data
-        } else {
-            console.log("The #data element is present.");
+        console.log('Constructed URL:', url);
+        console.log('File path:', filePath);
+
+        // Ensure the "files" directory exists
+        if (!fs.existsSync(filesDir)) {
+            fs.mkdirSync(filesDir, { recursive: true }); // Create the directory if it doesn't exist
+            console.log('Created "files" directory.');
         }
-                console.log("Navigated to page.");
-                await page.waitForSelector('#data');
-                await page.waitForTimeout(3000)
-              
-                // Debugging: Check for #data element
-            if (!(await page.$('#data'))) {
-                console.error("The #data element is not present on the page.");
-                await browser.close();
-                return res.status(500).json({
-                    status: false,
-                    message: "Failed to generate PDF: The #data element is not present on the page.",
-                });
-            }
+
+        try {
+            // Navigate to the URL
+            await page.goto(url, { waitUntil: 'networkidle' });
+            console.log('Navigated to page.');
+
+            // Debugging: Take a screenshot to verify the page content
+            await page.screenshot({ path: path.join(filesDir, 'debug_screenshot.png') });
             
-                
-                
-                // await page.waitForTimeout(6000); // Additional wait if needed
-            
-               
-                await page.pdf({
-                    path: filePath,
-                    format: 'A4',
-                    printBackground: true,
-                    preferCSSPageSize: true,
-                    margin: { bottom: 30, top: template == 1 ? 30 : 0 },
-                });
-                console.log("PDF generated successfully:", filePath);
-                await browser.close();
+
+            // Debugging: Log the page content
+            const pageContent = await page.content();
+            console.log('Page content:', pageContent);
+
+            // Wait for the #data element to be present
+            try {
+                await page.waitForSelector('#data', { timeout: 60000 });
+                console.log('#data element is visible.');
             } catch (error) {
-                console.error("Failed to generate PDF:", error);
-                await browser.close();
+                console.warn('The #data element is not present on the page.');
+                // Proceed with PDF generation even if #data is not found
             }
-            
-        
 
+            // Additional wait for stability (optional)
+            await page.waitForTimeout(3000);
 
-        res.status(200).json({
-            status: true,
-            body: {
-                link: `https://cvtemplate.ekazi.co.tz/${filePath}`,
-                // https://cvtemplate.ekazi.co.tz/${filePath}
-            },
-        });
-        console.log('PDF generation completed');
+            // Generate PDF
+            await page.pdf({
+                path: filePath,
+                format: 'A4',
+                printBackground: true,
+                preferCSSPageSize: true,
+                margin: { bottom: 30, top: template == 1 ? 30 : 0 },
+            });
+            console.log('PDF generated successfully:', filePath);
+
+            // Close the browser
+            await browser.close();
+
+            // Return the link to the generated PDF
+            res.status(200).json({
+                status: true,
+                body: {
+                    link: `https://cvtemplate.ekazi.co.tz/files/${fileName}`,
+                },
+            });
+            console.log('PDF generation completed');
+        } catch (error) {
+            console.error('Failed to generate PDF:', error);
+            await browser.close();
+            res.status(500).send({
+                status: false,
+                message: 'Failed to generate PDF.',
+                error: error.message,
+            });
+        }
     } catch (error) {
         console.error('Error generating PDF:', error);
         res.status(500).send({
@@ -134,12 +109,6 @@ app.get("/generatePdf", async (req, res) => {
     }
 });
 
-
-
-
-app.listen(4000, () => {
-    console.log("Ekazi server started at 4000");
+app.listen(5001, () => {
+    console.log('Server started at http://localhost:5001');
 });
-
-
-
