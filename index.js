@@ -6,10 +6,11 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 
+const axios = require('axios'); // Add axios for making HTTP requests
+
 app.use(express.json());
 app.use('/files', express.static('files')); // Serve static files from the "files" directory
 app.use(bodyParser.text({ type: '/' }));
-
 // Function to sanitize file names
 const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
  
@@ -20,6 +21,35 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
     credentials: true, // Allow cookies and credentials (if needed)
 }));
+// Proxy route
+app.use('/proxy', async (req, res) => {
+    try {
+        // Construct the target URL
+        const targetUrl = `https://cvtemplate.ekazi.co.tz${req.url}`;
+
+        // Forward the request to the target server
+        const response = await axios({
+            method: req.method,
+            url: targetUrl,
+            data: req.body,
+            headers: {
+                ...req.headers,
+                host: 'cvtemplate.ekazi.co.tz', // Set the correct host header
+            },
+        });
+
+        // Send the response back to the client
+        res.status(response.status).send(response.data);
+    } catch (error) {
+        console.error('Proxy error:', error.message);
+        res.status(500).send({
+            status: false,
+            message: 'Proxy request failed.',
+            error: error.message,
+        });
+    }
+});
+
 
 app.get('/generatePdf', async (req, res) => {
     try {
