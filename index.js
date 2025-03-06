@@ -15,12 +15,18 @@ app.use(bodyParser.text({ type: '/' }));
 const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
  
 // CORS Configuration
-app.use(cors({
-    origin: 'https://cvbuilder.ekazi.co.tz', // Allow only this origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-    credentials: true, // Allow cookies and credentials (if needed)
-}));
+// app.use(cors({
+//     origin: 'https://cvbuilder.ekazi.co.tz', // Allow only this origin
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+//     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+//     credentials: true, // Allow cookies and credentials (if needed)
+// }));
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "https://cvbuilder.ekazi.co.tz");
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    next();
+  });
 // Proxy route
 app.use('/proxy', async (req, res) => {
     try {
