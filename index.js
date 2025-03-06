@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 
 app.use(express.json());
 app.use('/files', express.static('files')); // Serve static files from the "files" directory
@@ -11,6 +12,14 @@ app.use(bodyParser.text({ type: '/' }));
 
 // Function to sanitize file names
 const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
+ 
+// CORS Configuration
+app.use(cors({
+    origin: 'https://cvbuilder.ekazi.co.tz', // Allow only this origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+    credentials: true, // Allow cookies and credentials (if needed)
+}));
 
 app.get('/generatePdf', async (req, res) => {
     try {
