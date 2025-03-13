@@ -42,7 +42,7 @@ const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
 // });
 
 // PDF generation route
-app.get('/generatePdf', async (req, res) => {
+app.get('/generatePdf',cors(), async (req, res) => {
     const { uuid, template, name } = req.query;
 
     if (!uuid || !template || !name) {
