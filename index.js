@@ -5,44 +5,30 @@ const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
-const axios = require('axios');
+ 
 
 // Middleware
 app.use(express.json());
 app.use('/files', express.static('files')); // Serve static files from the "files" directory
 app.use(bodyParser.text({ type: '/' }));
-app.use(cors({
-    origin: 'https://cvbuilder.ekazi.co.tz',
-    methods: ['GET', 'POST', 'PUT'],
-    allowedHeaders: ['Content-Type'],
-}));
+// app.use(cors({
+//     origin: 'https://cvbuilder.ekazi.co.tz',
+//     methods: ['GET', 'POST', 'PUT'],
+//     allowedHeaders: ['Content-Type'],
+// }));
+const corsOptions = {  
+    origin: 'https://cvbuilder.ekazi.co.tz',  
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  
+    credentials: true,  // Allows cookies and authentication headers  
+    optionsSuccessStatus: 200  
+};  
 
+app.use(cors(corsOptions)); // Apply CORS globally 
 // Function to sanitize file names
 const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
 
-// Proxy route
-// app.use('/proxy', async (req, res) => {
-//     try {
-//         const targetUrl = `https://cvtemplate.ekazi.co.tz${req.url}`;
-//         const response = await axios({
-//             method: req.method,
-//             url: targetUrl,
-//             data: req.body,
-//             headers: req.headers,
-//         });
-//         res.status(response.status).send(response.data);
-//     } catch (error) {
-//         console.error('Proxy error:', error.message);
-//         res.status(500).send({
-//             status: false,
-//             message: 'Proxy request failed.',
-//             error: error.message,
-//         });
-//     }
-// });
-
-// PDF generation route
-app.get('/generatePdf',cors(), async (req, res) => {
+ 
+app.get('/generatePdf', async (req, res) => {
     const { uuid, template, name } = req.query;
 
     if (!uuid || !template || !name) {
