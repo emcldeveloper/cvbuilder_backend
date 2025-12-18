@@ -16,7 +16,7 @@ const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
  
  ;
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "https://cvbuilder.ekazi.co.tz");
+    res.setHeader("Access-Control-Allow-Origin", "https://.ekazi.co.tz");
     res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     next();
@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 app.use('/proxy', async (req, res) => {
     try {
         // Construct the target URL
-        const targetUrl = `https://cvtemplate.ekazi.co.tz${req.url}`;
+        const targetUrl = `https://ekazi.co.tz${req.url}`;
 
         // Forward the request to the target server
         const response = await axios({
@@ -34,7 +34,7 @@ app.use('/proxy', async (req, res) => {
             data: req.body,
             headers: {
                 ...req.headers,
-                host: 'cvtemplate.ekazi.co.tz', // Set the correct host header
+                host: 'ekazi.co.tz', // Set the correct host header
             },
         });
 
@@ -68,7 +68,7 @@ app.get('/generatePdf', async (req, res) => {
         const page = await browser.newPage();
 
         // Construct the URL and file path
-        const url = `https://cvbuilder.ekazi.co.tz/template${template}/${uuid}`;
+        const url = `https://ekazi.co.tz/template${template}`;
         const sanitizedName = sanitize(name); // Sanitize the name
         const fileName = `${sanitizedName}_${template}_${Date.now()}CV.pdf`; // Unique file name
         const filesDir = path.join(__dirname, 'files'); // Absolute path to the "files" directory
@@ -125,7 +125,7 @@ app.get('/generatePdf', async (req, res) => {
             res.status(200).json({
                 status: true,
                 body: {
-                    link: `https://cvtemplate.ekazi.co.tz/files/${fileName}`,
+                    link: `https://ekazi.co.tz/files/${fileName}`,
                 },
             });
             console.log('PDF generation completed');
