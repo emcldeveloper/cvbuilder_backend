@@ -16,7 +16,7 @@ const sanitize = (str) => str.replace(/[^a-zA-Z0-9_-]/g, '_');
  
  ;
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "https://.ekazi.co.tz");
+    res.setHeader("Access-Control-Allow-Origin", "https://ekazi.co.tz");
     res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     next();
@@ -53,10 +53,10 @@ app.use('/proxy', async (req, res) => {
 
 app.get('/generatePdf', async (req, res) => {
     try {
-        const { uuid, template, name } = req.query;
+        const { template, name } = req.query;
 
         // Validate required query parameters
-        if (!uuid || !template || !name) {
+        if (!template || !name) {
             return res.status(400).send({
                 status: false,
                 message: 'Missing required query parameters: uuid, template, or name.',
