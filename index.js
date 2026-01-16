@@ -82,7 +82,29 @@ const path = require("path");
 const fs = require("fs");
 const cors = require("cors");
 
-app.use(cors({ origin: "http://localhost:3000" }));
+// app.use(cors({ origin: "http://localhost:3000" }));
+const cors = require("cors");
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://ekazi.co.tz"
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, 
+  })
+);
+
 app.use(express.json());
 app.use("/files", express.static("files"));
 
@@ -103,7 +125,7 @@ app.get("/generatePdf", async (req, res) => {
         browser = await chromium.launch();
         const page = await browser.newPage();
 
-        const url = `http://localhost:3000/template${template}`;
+        const url = `https://ekazi.co.tz/template${template}`;
         const sanitizedName = sanitize(name);
 
         const fileName = `${sanitizedName}_${template}_${Date.now()}.pdf`;
@@ -133,7 +155,7 @@ app.get("/generatePdf", async (req, res) => {
         res.status(200).json({
             status: true,
             body: {
-                link: `http://localhost:5001/files/${fileName}`
+                link: `https://cvtemplate.ekazi.co.tz/files/${fileName}`
             }
         });
 
@@ -150,5 +172,5 @@ app.get("/generatePdf", async (req, res) => {
 });
 
 app.listen(5001, () => {
-    console.log("PDF Server running on http://localhost:5001");
+    console.log("PDF Server running on https://cvtemplate.ekazi.co.tz/");
 });
