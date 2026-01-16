@@ -88,6 +88,6 @@ app.get("/generatePdf", async (req, res) => {
   }
 });
 
-app.listen(5001, () => {
+app.listen(3999, () => {
   console.log("PDF Server running on https://cvtemplate.ekazi.co.tz/");
 });
