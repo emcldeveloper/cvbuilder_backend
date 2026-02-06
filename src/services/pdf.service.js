@@ -25,7 +25,7 @@ export const createPdf = async ({ template, name, applicantId }) => {
   try {
     const page = await browser.newPage();
 
-    const url = `https://www.ekazi.com/cv/print/${template}?applicantId=${applicantId}`;
+    const url = `https://ekazi.co.tz/cv/print/${template}?applicantId=${applicantId}`;
     const sanitizedName = sanitize(name);
 
     const fileName = `${sanitizedName}_${template}_${Date.now()}.pdf`;

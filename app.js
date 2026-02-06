@@ -1,13 +1,29 @@
 import express from "express";
+import cors from "cors";
 
 import pdfRoutes from "./src/routes/pdf.routes.js";
 import fileRoutes from "./src/routes/file.routes.js";
 import errorMiddleware from "./src/middlewares/error.middleware.js";
-import { FRONTEND_URLS, PORT } from "./src/config/env.js";
+import { PORT } from "./src/config/env.js";
 
 const app = express();
 
-// Cors Configuration
+const allowedOrigins = ["http://localhost:3000", "https://ekazi.co.tz"];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
