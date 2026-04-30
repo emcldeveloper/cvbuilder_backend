@@ -3,6 +3,6 @@ import { generatePdf } from "../controllers/pdf.controller.js";
 
 const router = express.Router();
 
-router.get("/", generatePdf);
+router.post("/generate", generatePdf);
 
 export default router;
