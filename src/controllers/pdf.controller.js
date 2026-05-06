@@ -2,24 +2,29 @@ import { getBrowser } from "../utils/browser.js";
 
 export const generatePdf = async (req, res) => {
   try {
-    const { html, watermark = true, logoBase64 = "" } = req.body;
+    const {
+      html,
+      watermark = true,
+      logoBase64 = "",
+      watermarkBase64 = "",
+    } = req.body;
 
     if (!html)
       return res.status(400).json({ error: "HTML content is required" });
 
     // ── Watermark CSS ──────────────────────────────────────────────────
     const watermarkStyle =
-      watermark && logoBase64
+      watermark && watermarkBase64
         ? `
       body::after {
         content: "";
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) rotate(-35deg);
-        width: 500px;
-        height: 500px;
-        background-image: url("${logoBase64}");
+        transform: translate(-50%, -50%);
+        width: 1200px;
+        height: 100%;
+        background-image: url("${watermarkBase64}");
         background-repeat: no-repeat;
         background-size: contain;
         background-position: center;
@@ -35,7 +40,7 @@ export const generatePdf = async (req, res) => {
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) rotate(-35deg);
+        transform: translate(-50%, -50%);
         font-size: 72px;
         font-weight: 700;
         color: #000;
