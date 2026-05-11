@@ -1,6 +1,8 @@
 import { getBrowser } from "../utils/browser.js";
 
 export const generatePdf = async (req, res) => {
+  let page;
+
   try {
     const {
       html,
@@ -54,7 +56,7 @@ export const generatePdf = async (req, res) => {
           : "";
 
     const browser = await getBrowser();
-    const page = await browser.newPage();
+    page = await browser.newPage();
 
     // ── Inject full HTML with styles ───────────────────────────────────
     await page.setContent(
@@ -151,5 +153,9 @@ export const generatePdf = async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed to generate PDF", message: error.message });
+  } finally {
+    if (page) {
+      await page.close().catch(() => {});
+    }
   }
 };
