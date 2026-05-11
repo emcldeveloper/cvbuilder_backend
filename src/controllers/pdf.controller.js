@@ -88,7 +88,7 @@ export const generatePdf = async (req, res) => {
         <body>${html}</body>
       </html>
     `,
-      { waitUntil: "networkidle0" },
+      { waitUntil: "domcontentloaded" },
     );
 
     await page.emulateMediaType("print");
