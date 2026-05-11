@@ -144,6 +144,12 @@ export const generatePdf = async (req, res) => {
     res.end(pdfBuffer);
   } catch (error) {
     console.error("PDF generation error:", error);
-    res.status(500).json({ error: "Failed to generate PDF" });
+    console.error(error);
+    console.error("MESSAGE:", error.message);
+    console.error("STACK:", error.stack);
+
+    res
+      .status(500)
+      .json({ error: "Failed to generate PDF", message: error.message });
   }
 };
